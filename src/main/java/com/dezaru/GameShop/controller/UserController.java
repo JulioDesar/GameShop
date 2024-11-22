@@ -24,9 +24,9 @@ public class UserController {
     @GetMapping({"", "/"})
     public String showAdminPage(Model model) {
         List<User> users = userRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
-        System.out.println(users);
         List<UserListDto> userList = UserListDto.from(users);
-        model.addAttribute("users", users);
+        model.addAttribute("users", userList);
+
         return "admin/index";
     }
 }
