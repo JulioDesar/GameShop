@@ -1,4 +1,4 @@
-package com.dezaru.GameShop.DTO;
+package com.dezaru.GameShop.DTO.user;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head th:replace="~{components/model :: head ('Admin')}">
+    <title>Admin</title>
+</head>
+
+<body>
+    <nav th:replace="~{components/sidebar :: sidebar}">
+    </nav>
+
+    <button class="btn float-start" data-bs-toggle="offcanvas" data-bs-target="#offcanvas" role="button" width="100">
+        <i class="bi bi-three-dots"></i>
+    </button>
+
+    <div class="container">
+        <form method="post" th:object="${userDto}">
+            <div class="row">
+                <div class="text-center">
+                    <h1>Criar Usuário</h1>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label th:for="${userDto.name}">Nome</label>
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" placeholder="Nome" th:field="${userDto.name}">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label th:for="${userDto.email}">Email</label>
+                </div>
+                <div class="col">
+                    <input type="email" class="form-control" placeholder="Email" th:field="${userDto.email}">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label th:for="${userDto.password}">Senha</label>
+                </div>
+                <div class="col">
+                    <input type="password" class="form-control" placeholder="Senha" th:field="${userDto.password}">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label th:for="${user.role}">Função</label>
+                </div>
+                <div class="col">
+                    <select class="form-select" th:field="${userDto.role}">
+                        <option value="ADMIN">Administrador</option>
+                        <option value="USER">Usuario</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <div class="col-sm-4">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <a th:href="@{/admin/}" class="btn btn-danger" role="button">Cancelar</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>
