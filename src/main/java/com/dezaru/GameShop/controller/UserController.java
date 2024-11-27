@@ -11,7 +11,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.dezaru.GameShop.DTO.user.UserDto;
-import com.dezaru.GameShop.DTO.user.UserEdit;
 import com.dezaru.GameShop.DTO.user.UserEditDto;
 import com.dezaru.GameShop.DTO.user.UserListDto;
 import com.dezaru.GameShop.model.User;
@@ -31,8 +30,8 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
-    
-    @GetMapping({"", "/"})
+
+    @GetMapping({ "", "/" })
     public String showAdminPage(Model model) {
         List<User> users = userRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
         List<UserListDto> userList = UserListDto.from(users);
@@ -64,18 +63,45 @@ public class UserController {
         try {
             Optional<User> u = userRepository.findById(id);
 
-            if(u.isPresent()){
+            if (u.isPresent()) {
                 User user = u.get();
                 model.addAttribute("user", user);
 
-                UserEditDto userDto = new UserEditDto(user.getName(), user.getEmail(), user.getPassword(), user.getRole().toString(), user.getIsActive());
+                UserEditDto userDto = new UserEditDto(user.getName(), user.getEmail(), user.getPassword(),
+                        user.getRole().toString(), user.getIsActive());
                 model.addAttribute("userDto", userDto);
             }
-            
+
         } catch (Exception ex) {
             System.out.println("Exception: " + ex.getMessage());
-            return "redirect:/products";
+            return "redirect:/admin";
         }
         return "admin/edit";
+    }
+
+    @PostMapping("/edit")
+    public String editUser(@Valid @ModelAttribute UserEditDto userDto, @RequestParam int id, BindingResult result) {
+        if (result.hasErrors())
+            return "admin/create";
+
+        try {
+            Optional<User> u = userRepository.findById(id);
+
+            if (u.isPresent()) {
+                User user = u.get();
+                user.setName(userDto.name());
+                user.setEmail(userDto.email());
+                user.setPassword(userDto.password().isEmpty() ? user.getPassword() : userDto.password());
+                user.setRole(Role.valueOf(userDto.role()));
+                user.setIsActive(userDto.isActive());
+
+                userRepository.save(user);
+            }
+
+            return "redirect:/admin";
+        } catch (Exception ex) {
+            System.out.println("Exception: " + ex.getMessage());
+            return "redirect:/admin";
+        }
     }
 }
