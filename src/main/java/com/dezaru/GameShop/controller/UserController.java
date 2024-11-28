@@ -1,7 +1,6 @@
 package com.dezaru.GameShop.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -10,12 +9,12 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.dezaru.GameShop.DTO.user.UserDto;
-import com.dezaru.GameShop.DTO.user.UserEditDto;
-import com.dezaru.GameShop.DTO.user.UserListDto;
 import com.dezaru.GameShop.model.User;
+import com.dezaru.GameShop.model.DTO.user.UserDto;
+import com.dezaru.GameShop.model.DTO.user.UserEditDto;
+import com.dezaru.GameShop.model.DTO.user.UserListDto;
 import com.dezaru.GameShop.model.Enum.Role;
-import com.dezaru.GameShop.repository.UserRepository;
+import com.dezaru.GameShop.service.UserService;
 
 import jakarta.validation.Valid;
 
@@ -29,11 +28,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class UserController {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
     @GetMapping({ "", "/" })
     public String showAdminPage(Model model) {
-        List<User> users = userRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<User> users = userService.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
         List<UserListDto> userList = UserListDto.from(users);
         model.addAttribute("users", userList);
 
@@ -54,26 +53,29 @@ public class UserController {
             return "admin/create";
 
         User user = new User(userDto.name(), userDto.email(), userDto.password(), Role.valueOf(userDto.role()));
-        userRepository.save(user);
+        userService.save(user);
         return "redirect:/admin";
     }
 
     @GetMapping("/edit")
     public String showEditPage(Model model, @RequestParam int id) {
         try {
-            Optional<User> u = userRepository.findById(id);
+            User user = userService.findById(id);
 
-            if (u.isPresent()) {
-                User user = u.get();
-                model.addAttribute("user", user);
+            if (user == null)
+                return "redirect:/admin";
 
-                UserEditDto userDto = new UserEditDto(user.getName(), user.getEmail(), user.getPassword(),
-                        user.getRole().toString(), user.getIsActive());
-                model.addAttribute("userDto", userDto);
-            }
+            UserEditDto userDto = new UserEditDto(
+                    user.getName(),
+                    user.getEmail(),
+                    user.getPassword(),
+                    user.getRole().toString(),
+                    user.getIsActive());
+            model.addAttribute("user", user);
+            model.addAttribute("userDto", userDto);
 
         } catch (Exception ex) {
-            System.out.println("Exception: " + ex.getMessage());
+            System.err.println("Exception: " + ex.getMessage());
             return "redirect:/admin";
         }
         return "admin/edit";
@@ -81,22 +83,23 @@ public class UserController {
 
     @PostMapping("/edit")
     public String editUser(@Valid @ModelAttribute UserEditDto userDto, @RequestParam int id, BindingResult result) {
+
         if (result.hasErrors())
             return "admin/create";
 
         try {
-            Optional<User> u = userRepository.findById(id);
+            User user = userService.findById(id);
 
-            if (u.isPresent()) {
-                User user = u.get();
-                user.setName(userDto.name());
-                user.setEmail(userDto.email());
-                user.setPassword(userDto.password().isEmpty() ? user.getPassword() : userDto.password());
-                user.setRole(Role.valueOf(userDto.role()));
-                user.setIsActive(userDto.isActive());
+            if (user == null)
+                return "redirect:/admin";
 
-                userRepository.save(user);
-            }
+            user.setName(userDto.name());
+            user.setEmail(userDto.email());
+            user.setPassword(userDto.password().isEmpty() ? user.getPassword() : userDto.password());
+            user.setRole(Role.valueOf(userDto.role()));
+            user.setIsActive(userDto.isActive());
+
+            userService.save(user);
 
             return "redirect:/admin";
         } catch (Exception ex) {
@@ -107,11 +110,10 @@ public class UserController {
 
     @GetMapping("/delete")
     public String delete(@RequestParam int id) {
-        Optional<User> user = userRepository.findById(id);
+        User user = userService.findById(id);
 
-        if (user.isPresent()) {
-            userRepository.delete(user.get());
-
+        if (user != null) {
+            userService.delete(user);
             return "redirect:/admin";
         }
 

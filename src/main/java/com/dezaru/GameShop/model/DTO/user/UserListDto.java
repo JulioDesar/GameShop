@@ -1,4 +1,4 @@
-package com.dezaru.GameShop.DTO.user;
+package com.dezaru.GameShop.model.DTO.user;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
