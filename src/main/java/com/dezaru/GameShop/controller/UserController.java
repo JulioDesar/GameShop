@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.data.domain.Page;
 
 import com.dezaru.GameShop.model.User;
 import com.dezaru.GameShop.model.DTO.user.UserDto;
@@ -31,10 +32,11 @@ public class UserController {
     private UserService userService;
 
     @GetMapping({ "", "/" })
-    public String showAdminPage(Model model) {
-        List<User> users = userService.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
-        List<UserListDto> userList = UserListDto.from(users);
-        model.addAttribute("users", userList);
+    public String showAdminPage(Model model, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "2") int size) {
+        Page<UserListDto> userPage = userService.findPaginated(page, size);
+        model.addAttribute("users", userPage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", userPage.getTotalPages());
 
         return "admin/index";
     }
